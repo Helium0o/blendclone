@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob:; img-src 'self' data: blob:; worker-src 'self' blob:;" />
+  <title>CarForge Studio</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "./vendor/three/build/three.module.js",
+      "three/addons/": "./vendor/three/examples/jsm/",
+      "three-mesh-bvh": "./vendor/three-mesh-bvh/src/index.js",
+      "three-bvh-csg": "./vendor/three-bvh-csg/src/index.js"
+    }
+  }
+  </script>
+</head>
+<body>
+  <div id="app">
+    <header id="topbar">
+      <div class="brand"><span class="logo">◆</span> CarForge <b>Studio</b></div>
+      <nav class="menus">
+        <div class="menu" data-menu="file"><button>File</button><div class="dropdown">
+          <button data-action="new">New scene <kbd>Ctrl+N</kbd></button>
+          <button data-action="open">Open project… <kbd>Ctrl+O</kbd></button>
+          <button data-action="save">Save project <kbd>Ctrl+S</kbd></button>
+          <button data-action="saveAs">Save project as…</button>
+          <hr />
+          <button data-action="import">Import model (GLB, glTF, OBJ, FBX, STL)…</button>
+          <hr />
+          <button data-action="export:glb">Export GLB (recommended)</button>
+          <button data-action="export:gltf">Export glTF</button>
+          <button data-action="export:obj">Export OBJ</button>
+          <button data-action="export:stl">Export STL (3D print)</button>
+          <button data-action="export:usdz">Export USDZ (AR)</button>
+          <hr />
+          <button data-action="screenshot">Save render image… <kbd>F12</kbd></button>
+        </div></div>
+        <div class="menu" data-menu="edit"><button>Edit</button><div class="dropdown">
+          <button data-action="undo">Undo <kbd>Ctrl+Z</kbd></button>
+          <button data-action="redo">Redo <kbd>Ctrl+Y</kbd></button>
+          <hr />
+          <button data-action="duplicate">Duplicate <kbd>Ctrl+D</kbd></button>
+          <button data-action="delete">Delete <kbd>Del</kbd></button>
+          <button data-action="group">Group selection <kbd>Ctrl+G</kbd></button>
+          <button data-action="ground">Drop to ground</button>
+          <button data-action="toMesh">Convert to editable mesh</button>
+          <hr />
+          <button data-action="bool:subtract">Boolean: subtract 2nd from 1st</button>
+          <button data-action="bool:union">Boolean: union</button>
+          <button data-action="bool:intersect">Boolean: intersect</button>
+          <button data-action="mirror">Mirror across centre (Z)</button>
+        </div></div>
+        <div class="menu" data-menu="view"><button>View</button><div class="dropdown">
+          <button data-action="view:perspective">Perspective <kbd>0</kbd></button>
+          <button data-action="view:front">Front <kbd>1</kbd></button>
+          <button data-action="view:side">Side <kbd>3</kbd></button>
+          <button data-action="view:top">Top <kbd>7</kbd></button>
+          <button data-action="view:rear">Rear</button>
+          <button data-action="frame">Frame selection <kbd>F</kbd></button>
+          <hr />
+          <button data-action="toggleGrid">Toggle grid</button>
+          <button data-action="help">Keyboard shortcuts</button>
+        </div></div>
+        <div class="menu" data-menu="ai"><button>AI</button><div class="dropdown">
+          <button data-action="connectAI">Connect Claude (MCP)…</button>
+          <button data-action="aiLog">AI activity log</button>
+        </div></div>
+      </nav>
+      <div class="toolbar">
+        <button class="icon" data-action="undo" title="Undo (Ctrl+Z)">↶</button>
+        <button class="icon" data-action="redo" title="Redo (Ctrl+Y)">↷</button>
+        <span class="sep"></span>
+        <div class="seg" id="modeSeg">
+          <button class="icon" data-mode="select" title="Select (Q)">⬚</button>
+          <button class="icon active" data-mode="translate" title="Move (W)">✥</button>
+          <button class="icon" data-mode="rotate" title="Rotate (E)">⟳</button>
+          <button class="icon" data-mode="scale" title="Scale (R)">⤢</button>
+        </div>
+        <button class="icon toggle" id="snapBtn" title="Snap to grid (S)">🧲</button>
+        <span class="sep"></span>
+        <div class="seg">
+          <button data-action="view:perspective" title="Perspective">3D</button>
+          <button data-action="view:front" title="Front">Front</button>
+          <button data-action="view:side" title="Side">Side</button>
+          <button data-action="view:top" title="Top">Top</button>
+          <button data-action="view:rear" title="Rear">Rear</button>
+        </div>
+        <button class="icon" data-action="frame" title="Frame selection (F)">⌖</button>
+        <span class="sep"></span>
+        <select id="envSelect" title="Lighting environment"></select>
+        <button class="icon" data-action="screenshot" title="Render image (F12)">📷</button>
+        <button class="primary" data-action="export:glb" title="Export GLB">Export</button>
+      </div>
+      <button id="aiStatus" class="ai-pill" data-action="connectAI" title="Connect Claude via MCP"><span class="dot"></span><span class="label">AI link</span></button>
+    </header>
+
+    <aside id="library">
+      <div class="tabs" id="libTabs">
+        <button data-tab="cars" class="active">Cars</button>
+        <button data-tab="parts">Parts</button>
+        <button data-tab="shapes">Shapes</button>
+        <button data-tab="materials">Paint</button>
+        <button data-tab="lights">Lights</button>
+      </div>
+      <input id="libSearch" class="search" placeholder="Search…" />
+      <div id="libGrid" class="lib-grid"></div>
+      <div class="lib-hint">Drag items into the viewport.<br />Drop paint onto any object.</div>
+    </aside>
+
+    <main id="viewportWrap">
+      <div id="viewport"></div>
+      <div id="dropOverlay"><div>Drop to add</div></div>
+      <div id="emptyHint">
+        <h2>Start by dragging a car in</h2>
+        <p>Pick a body style on the left and drop it here — or connect Claude and just ask.</p>
+        <div class="quick"><button data-quick="sedan">+ Sedan</button><button data-quick="sports_coupe">+ Sports coupe</button><button data-quick="supercar">+ Supercar</button><button data-quick="suv">+ SUV</button></div>
+      </div>
+      <div id="aiActivity"></div>
+      <div id="toasts"></div>
+    </main>
+
+    <aside id="sidebar">
+      <section id="outlinerPanel">
+        <div class="panel-title">Scene <span class="spacer"></span><button class="mini" data-action="group" title="Group selection">⊞</button><button class="mini" data-action="delete" title="Delete">🗑</button></div>
+        <div id="outliner"></div>
+      </section>
+      <section id="propsPanel">
+        <div id="properties"></div>
+      </section>
+    </aside>
+
+    <footer id="statusbar">
+      <span id="stats"></span>
+      <span class="spacer"></span>
+      <span id="statusMsg"></span>
+      <span class="spacer"></span>
+      <span id="mcpInfo"></span>
+    </footer>
+  </div>
+  <div id="modalRoot"></div>
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

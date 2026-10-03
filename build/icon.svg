@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2a2d33"/><stop offset="1" stop-color="#0f1013"/></linearGradient>
+    <linearGradient id="car" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffb066"/><stop offset="1" stop-color="#ff6a00"/></linearGradient>
+  </defs>
+  <rect x="16" y="16" width="480" height="480" rx="108" fill="url(#bg)"/>
+  <path d="M78 318 C88 286 116 274 150 268 L196 214 C210 198 230 190 254 190 L318 190 C346 190 366 202 384 222 L414 262 C444 268 466 282 470 318 L470 336 C470 346 462 352 452 352 L90 352 C80 352 74 344 76 334 Z" fill="url(#car)"/>
+  <path d="M206 258 L236 222 C242 215 250 212 260 212 L300 212 L300 258 Z M318 212 L326 212 C342 212 354 220 364 232 L384 258 L318 258 Z" fill="#151619"/>
+  <circle cx="160" cy="352" r="44" fill="#151619"/><circle cx="160" cy="352" r="24" fill="#c9ccd1"/>
+  <circle cx="386" cy="352" r="44" fill="#151619"/><circle cx="386" cy="352" r="24" fill="#c9ccd1"/>
+  <path d="M256 92 L276 128 L256 164 L236 128 Z" fill="#ff7a1a"/>
+</svg>

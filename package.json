@@ -1,0 +1,84 @@
+{
+  "name": "carforge-studio",
+  "productName": "CarForge Studio",
+  "version": "1.0.0",
+  "description": "3D model builder specialised for cars, controllable by AI over MCP",
+  "main": "electron/main.cjs",
+  "author": "CarForge",
+  "license": "MIT",
+  "scripts": {
+    "postinstall": "node scripts/vendor.cjs",
+    "vendor": "node scripts/vendor.cjs",
+    "start": "electron .",
+    "serve": "node scripts/serve.cjs",
+    "test": "node scripts/test-mcp.cjs",
+    "dist:win": "npm run vendor && electron-builder --win nsis portable --x64",
+    "dist:mac": "npm run vendor && electron-builder --mac dmg",
+    "dist:linux": "npm run vendor && electron-builder --linux AppImage",
+    "dist:dir": "npm run vendor && electron-builder --dir"
+  },
+  "devDependencies": {
+    "electron": "^44.5.1",
+    "electron-builder": "^26.15.3",
+    "three": "^0.186.1",
+    "three-bvh-csg": "^0.0.18",
+    "three-mesh-bvh": "^0.9.15"
+  },
+  "build": {
+    "appId": "com.carforge.studio",
+    "productName": "CarForge Studio",
+    "artifactName": "${productName}-${version}-${os}-${arch}.${ext}",
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "files": [
+      "electron/**/*",
+      "src/**/*",
+      "build/icon.png",
+      "package.json",
+      "!src/vendor/**/*.d.ts",
+      "!**/node_modules/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "electron/mcp-bridge.cjs",
+        "to": "mcp-bridge.cjs"
+      }
+    ],
+    "asar": true,
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ],
+      "icon": "build/icon.png",
+      "signAndEditExecutable": false
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "CarForge Studio",
+      "artifactName": "${productName}-Setup-${version}.${ext}"
+    },
+    "portable": {
+      "artifactName": "${productName}-Portable-${version}.${ext}"
+    },
+    "mac": {
+      "target": [
+        "dmg"
+      ],
+      "icon": "build/icon.png",
+      "category": "public.app-category.graphics-design"
+    },
+    "linux": {
+      "target": [
+        "AppImage"
+      ],
+      "icon": "build/icon.png",
+      "category": "Graphics"
+    }
+  }
+}
