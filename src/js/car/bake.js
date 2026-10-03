@@ -564,6 +564,7 @@ export function composeBody(bake, p, target) {
   const map = target?.map || new Uint8Array(N * 4);
   const orm = target?.orm || new Uint8Array(N * 4);
   const emis = target?.emis || new Uint8Array(N * 4);
+  const mask = target?.mask || new Uint8Array(N * 4);
   const fin = PAINT_FINISHES[p.paintFinish] || PAINT_FINISHES.metallic;
   const paint = { a: hexToRgb(p.paintColor), ...fin };
   const roof = p.twoTone ? { a: hexToRgb(p.roofColor), r: 0.18, m: 0.2, c: 1 } : paint;
@@ -589,6 +590,7 @@ export function composeBody(bake, p, target) {
     map[t * 4] = a0 * 255; map[t * 4 + 1] = a1 * 255; map[t * 4 + 2] = a2 * 255; map[t * 4 + 3] = 255;
     orm[t * 4] = cc * 255; orm[t * 4 + 1] = rr * 255; orm[t * 4 + 2] = mm * 255; orm[t * 4 + 3] = 255;
     emis[t * 4] = femis[t * 3]; emis[t * 4 + 1] = femis[t * 3 + 1]; emis[t * 4 + 2] = femis[t * 3 + 2]; emis[t * 4 + 3] = 255;
+    mask[t * 4] = (w0 + (p.twoTone ? 0 : w1)) * 255; mask[t * 4 + 1] = mask[t * 4 + 2] = 0; mask[t * 4 + 3] = 255;
   }
-  return { map, orm, emis };
+  return { map, orm, emis, mask };
 }

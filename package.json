@@ -12,10 +12,10 @@
     "start": "electron .",
     "serve": "node scripts/serve.cjs",
     "test": "node scripts/test-mcp.cjs",
-    "dist:win": "npm run vendor && electron-builder --win nsis portable --x64",
-    "dist:mac": "npm run vendor && electron-builder --mac dmg",
-    "dist:linux": "npm run vendor && electron-builder --linux AppImage",
-    "dist:dir": "npm run vendor && electron-builder --dir"
+    "dist:win": "npm run vendor && electron-builder --win nsis portable --x64 --publish never",
+    "dist:mac": "npm run vendor && electron-builder --mac dmg --publish never",
+    "dist:linux": "npm run vendor && electron-builder --linux AppImage --publish never",
+    "dist:dir": "npm run vendor && electron-builder --dir --publish never"
   },
   "devDependencies": {
     "electron": "^44.5.1",

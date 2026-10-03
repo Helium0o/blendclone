@@ -32,13 +32,14 @@ function getWorker() {
   return worker;
 }
 function bakeAsync(grid, lay, p, TW, TH) {
+  const local = () => new Promise((res) => setTimeout(() => res(bakeBody(grid, lay, p, TW, TH)), 0));
   const w = getWorker();
-  if (!w) return new Promise((res) => setTimeout(() => res(bakeBody(grid, lay, p, TW, TH)), 0));
+  if (!w) return local();
   const id = ++jobId;
   return new Promise((resolve, reject) => {
     pending.set(id, { resolve, reject });
     w.postMessage({ id, grid, lay, p, TW, TH });
-  });
+  }).catch((err) => { console.warn('bake worker unavailable, baking on main thread', err); return local(); });
 }
 
 export const BAKE_QUALITY = { draft: 512, normal: 1024, high: 2048, ultra: 4096 };
@@ -89,7 +90,7 @@ export class CarModel {
       mat.iridescence = p.paintFinish === 'pearl' ? 0.5 : 0;
       mat.needsUpdate = true;
     }
-    this.mats.body.iridescence = p.paintFinish === 'pearl' ? 0.35 : 0;
+    this.mats.body.iridescence = p.paintFinish === 'pearl' ? 0.6 : 0;
     this.mats.body.emissiveIntensity = p.lightsOn ? 2.2 : 0;
     this.mats.aero = p.aeroFinish === 'carbon' ? this.mats.carbon : p.aeroFinish === 'body' ? this.mats.paint : this.mats.gloss;
     if (this.mats.caliper) this.mats.caliper.color.set(p.caliperColor);
@@ -180,7 +181,7 @@ export class CarModel {
     const { TW, TH } = this.bake;
     const m = this.mats.body;
     const sizeChanged = !m.map || m.map.image.width !== TW;
-    const target = sizeChanged ? null : { map: m.map.image.data, orm: m.roughnessMap.image.data, emis: m.emissiveMap.image.data };
+    const target = sizeChanged ? null : { map: m.map.image.data, orm: m.roughnessMap.image.data, emis: m.emissiveMap.image.data, mask: m.iridescenceMap.image.data };
     void newSize;
     const c = composeBody(this.bake, this.params, target);
     const mk = (data, srgb) => {
@@ -191,14 +192,16 @@ export class CarModel {
       return t;
     };
     if (sizeChanged) {
-      for (const k of ['map', 'roughnessMap', 'emissiveMap', 'normalMap']) m[k]?.dispose();
+      for (const k of ['map', 'roughnessMap', 'emissiveMap', 'normalMap', 'iridescenceMap']) m[k]?.dispose();
       m.map = mk(c.map, true);
       const orm = mk(c.orm, false);
       m.roughnessMap = orm; m.metalnessMap = orm; m.clearcoatMap = orm;
       m.emissiveMap = mk(c.emis, true);
       m.normalMap = mk(this.bake.normal, false);
+      m.iridescenceMap = mk(c.mask, false);
       m.needsUpdate = true;
     } else {
+      m.iridescenceMap.image.data = c.mask; m.iridescenceMap.needsUpdate = true;
       m.map.image.data = c.map; m.map.needsUpdate = true;
       m.roughnessMap.image.data = c.orm; m.roughnessMap.needsUpdate = true;
       m.emissiveMap.image.data = c.emis; m.emissiveMap.needsUpdate = true;

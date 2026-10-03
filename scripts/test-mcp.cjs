@@ -30,7 +30,8 @@ const check = (cond, msg) => { console.log(`${cond ? 'PASS' : 'FAIL'}  ${msg}`);
 
 (async () => {
   const env = { ...process.env, CARFORGE_MCP_PORT: String(PORT), CARFORGE_NO_SANDBOX: '1', CARFORGE_HEADLESS_GL: process.env.CARFORGE_HEADLESS_GL ?? '1', CARFORGE_LOG_RENDERER: process.env.CARFORGE_LOG_RENDERER || '' };
-  const app = spawn(electron, [root, '--no-sandbox'], { env, stdio: ['ignore', 'pipe', 'pipe'] });
+  const appExe = process.env.CARFORGE_APP_EXE; // test a packaged build instead of the source tree
+  const app = appExe ? spawn(appExe, ['--no-sandbox'], { env, stdio: ['ignore', 'pipe', 'pipe'] }) : spawn(electron, [root, '--no-sandbox'], { env, stdio: ['ignore', 'pipe', 'pipe'] });
   app.stdout.on('data', (d) => process.stdout.write(`[app] ${d}`));
   app.stderr.on('data', (d) => { const s = String(d); if (!/dbus|GPU|gpu|viz|Fontconfig|libva|ALSA|sandbox/i.test(s)) process.stdout.write(`[app:err] ${s}`); });
   try {
@@ -65,7 +66,8 @@ const check = (cond, msg) => { console.log(`${cond ? 'PASS' : 'FAIL'}  ${msg}`);
     check(Array.isArray(discover.body?.result?.supportedVersions), 'server/discover (stateless 2026 style)');
 
     // stdio bridge
-    const bridge = spawn(electron, [path.join(root, 'electron', 'mcp-bridge.cjs')], { env: { ...process.env, ELECTRON_RUN_AS_NODE: '1', CARFORGE_MCP_URL: URL_ }, stdio: ['pipe', 'pipe', 'pipe'] });
+    const bridgeScript = appExe ? path.join(path.dirname(appExe), 'resources', 'mcp-bridge.cjs') : path.join(root, 'electron', 'mcp-bridge.cjs');
+    const bridge = spawn(appExe || electron, [bridgeScript], { env: { ...process.env, ELECTRON_RUN_AS_NODE: '1', CARFORGE_MCP_URL: URL_ }, stdio: ['pipe', 'pipe', 'pipe'] });
     const lines = [];
     let buf = '';
     bridge.stdout.on('data', (d) => { buf += d; let i; while ((i = buf.indexOf('\n')) >= 0) { lines.push(JSON.parse(buf.slice(0, i))); buf = buf.slice(i + 1); } });
